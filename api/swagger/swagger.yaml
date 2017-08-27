@@ -1,0 +1,180 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: client manager
+  description: do some CRUD
+  contact:
+    name: peiwen.wang
+    email: pw5508@mun.ca
+
+host: localhost:5000
+basePath: /v1
+schemes:
+  - http
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /ping:
+    get:
+      x-swagger-router-controller: ping
+      description:
+        health check
+      operationId: ping
+      responses:
+        "200":
+          description: ping response
+          schema:
+            type: string
+            items:
+              $ref: '#/definitions/PingResponse'
+
+
+  /clients:
+    get:
+      description: |
+        Returns clients from the system that meet certain requirement
+      operationId: findClients
+      parameters:
+        - name: name
+          in: query
+          description: name to filter by
+          required: false
+          type: string
+        - name: minage
+          in: query
+          description: describe age range to filter by
+          required: false
+          type: string
+        - name: maxage
+          in: query
+          description: describe age range to filter by
+          required: false
+          type: string    
+        - name: limit
+          in: query
+          description: maximum number of results to return
+          required: false
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: clents response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Client'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      description: Creates a new clent
+      operationId: createClient
+      parameters:
+        - name: form
+          in: body
+          description: a form of clent info
+          required: true
+          schema:
+            $ref: '#/definitions/NewClient'
+      responses:
+        "200":
+          description: success response
+          schema:
+            $ref: '#/definitions/ClientCreatedResponse'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /clients/{id}:
+    get:
+      description: Returns a client
+      operationId: getClient
+      parameters:
+        - name: id
+          in: path
+          description: ID of client to fetch
+          required: true
+          type: string
+      responses:
+        "200":
+          description: pet response
+          schema:
+            $ref: '#/definitions/Client'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      description: deletes a single clien based on the ID supplied
+      operationId: deleteClient
+      parameters:
+        - name: id
+          in: path
+          description: ID of clien to delete
+          required: true
+          type: string
+      responses:
+        "204":
+          description: client deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Client:
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      address:
+        type: string
+      postalCode:
+        type: string
+      phone:
+        type: string
+      email:
+        type: string
+      dob:
+        type: string  
+  NewClient:
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      address:
+        type: string
+      postalCode:
+        type: string
+      phone:
+        type: string
+      email:
+        type: string
+      dob:
+        type: string        
+  
+  ClientCreatedResponse:
+    properties:
+        id:
+          type: string
+  
+  Error:
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+
+  PingResponse:
+    properties:
+        version:
+          type: string
