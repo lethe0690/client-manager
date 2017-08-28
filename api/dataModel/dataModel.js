@@ -1,7 +1,5 @@
-const mongoose = require('mongoose');
+const mongoose = require("./mongo");
 const Schema = mongoose.Schema;
-
-mongoose.connect('mongodb://rbc:rbc@ds161503.mlab.com:61503/rbc');
 
 const AccountSchema = new Schema({
     cid: String,
@@ -27,4 +25,4 @@ const ClientSchema = new Schema({
 const account = mongoose.model('Account', AccountSchema);
 const client = mongoose.model('Client', ClientSchema);
 
-module.exports = {account};
+module.exports = {account, client};

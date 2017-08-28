@@ -16,6 +16,7 @@
     "moment": "^2.18.1",
     "mongoose": "^4.11.8",
     "swagger-express-mw": "^0.7.0",
+    "uuid": "^3.1.0",
     "winston": "^2.3.1"
   },
   "devDependencies": {

@@ -36,11 +36,22 @@ paths:
     get:
       description: |
         Returns clients from the system that meet certain requirement
-      operationId: findClients
+      x-swagger-router-controller: client
+      operationId: getClient
       parameters:
         - name: name
           in: query
           description: name to filter by
+          required: false
+          type: string
+        - name: phone
+          in: query
+          description: phone to filter by
+          required: false
+          type: string
+        - name: email
+          in: query
+          description: email to filter by
           required: false
           type: string
         - name: minage
@@ -70,16 +81,19 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
+
     post:
-      description: Creates a new clent
+      x-swagger-router-controller: client
+      description: Creates a new client
       operationId: createClient
+
       parameters:
-        - name: form
-          in: body
-          description: a form of clent info
-          required: true
+        - in: body
+          name: form
+          description: a form of client info
           schema:
             $ref: '#/definitions/NewClient'
+
       responses:
         "200":
           description: success response
@@ -90,26 +104,31 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   /clients/{id}:
-    get:
-      description: Returns a client
-      operationId: getClient
+    put:
+      description: update a client
+      x-swagger-router-controller: client
+      operationId: updateClient
       parameters:
         - name: id
           in: path
-          description: ID of client to fetch
+          description: ID of client to update
           required: true
           type: string
-      responses:
-        "200":
-          description: pet response
+        - name: form
+          in: body
+          description: a form of client info
           schema:
-            $ref: '#/definitions/Client'
+            $ref: '#/definitions/NewClient'
+      responses:
+        "204":
+          description:  success response
         default:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
     delete:
       description: deletes a single clien based on the ID supplied
+      x-swagger-router-controller: client
       operationId: deleteClient
       parameters:
         - name: id
@@ -142,6 +161,7 @@ definitions:
       dob:
         type: string  
   NewClient:
+    type: object
     required:
       - name
     properties:
