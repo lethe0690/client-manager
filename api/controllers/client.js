@@ -70,13 +70,12 @@ function getClient(req, res) {
         dataModel.client
             .find(option, {
                 // can decide what field to show to the client, right now display everything for simple
-                __v: 0,
+                __v: 0
             })
             .limit(limit)
             .lean()
             .exec((err, result)=> {
                 if (err) {
-                    log.error(err, {source: "ctrl/chatHistory.js"});
                     errorHandler(res, err, 500, 'internal error');
                 }
 
