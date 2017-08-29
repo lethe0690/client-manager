@@ -143,6 +143,115 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
+
+  /accounts:
+        get:
+          description:
+            Returns accounts from the system that meet certain requirement
+          x-swagger-router-controller: account
+          operationId: getAccount
+          parameters:
+            - name: number
+              in: query
+              description: number to filter by
+              required: false
+              type: string
+            - name: type
+              in: query
+              description: type to filter by
+              required: false
+              type: string
+            - name: status
+              in: query
+              description: status to filter by
+              required: false
+              type: string
+            - name: limit
+              in: query
+              description: maximum number of results to return
+              required: false
+              type: integer
+              format: int32
+            - name: force
+              in: query
+              description: if force is set to true it means do not get cache
+              required: false
+              type: string
+          responses:
+            "200":
+              description: account response
+              schema:
+                type: array
+                items:
+                  $ref: '#/definitions/Account'
+            default:
+              description: unexpected error
+              schema:
+                $ref: '#/definitions/Error'
+
+        post:
+              x-swagger-router-controller: account
+              description: Creates a new account
+              operationId: createAccount
+
+              parameters:
+                - in: body
+                  name: form
+                  description: a form of client info
+                  schema:
+                    $ref: '#/definitions/NewAccount'
+
+              responses:
+                "200":
+                  description: success response
+                  schema:
+                    $ref: '#/definitions/AccountCreatedResponse'
+                default:
+                  description: unexpected error
+                  schema:
+                    $ref: '#/definitions/Error'
+
+  /accounts/{id}:
+        put:
+          description: update an account
+          x-swagger-router-controller: account
+          operationId: updateAccount
+          parameters:
+            - name: id
+              in: path
+              description: number of the account to update
+              required: true
+              type: string
+            - name: form
+              in: body
+              description: a form of account info
+              schema:
+                $ref: '#/definitions/NewAccount'
+          responses:
+            "204":
+              description:  success response
+            default:
+              description: unexpected error
+              schema:
+                $ref: '#/definitions/Error'
+        delete:
+          description: deletes an account based on the account number supplied
+          x-swagger-router-controller: account
+          operationId: deleteAccount
+          parameters:
+            - name: id
+              in: path
+              description: account number of the account to delete
+              required: true
+              type: string
+          responses:
+            "204":
+              description: account deleted
+            default:
+              description: unexpected error
+              schema:
+                $ref: '#/definitions/Error'
+
 definitions:
   Client:
     required:
@@ -176,12 +285,40 @@ definitions:
       email:
         type: string
       dob:
-        type: string        
-  
+        type: string
+
+  NewAccount:
+      type: object
+      required:
+        - type
+        - status
+      properties:
+        type:
+          type: string
+        status:
+          type: string
+
+  Account:
+        type: object
+        required:
+          - number
+        properties:
+          number:
+            type: string
+          type:
+            type: string
+          status:
+            type: string
+
   ClientCreatedResponse:
     properties:
         id:
           type: string
+
+  AccountCreatedResponse:
+      properties:
+          number:
+            type: string
   
   Error:
     required:

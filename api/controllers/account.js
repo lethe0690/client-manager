@@ -1,5 +1,8 @@
 const dataModel = require('../dataModel/dataModel');
 const redis = require('../redis/redis');
+const errors = require('./errorHandler');
+const validator = require('./validator');
+const auth = require('./auth').auth;
 
 function generateAccountNumber(n) {
     // n is the number of account number you may want to generate
@@ -36,26 +39,31 @@ function getAccount(req, res) {
         let option = {};
         let limit = 10;
         let force = false;
+        let cacheKey = '';
 
         // to get all query params and determine if this query has special limit
         Object.keys(req.swagger.params).forEach((item)=> {
             if (item === 'limit') limit = req.swagger.params[item].value;
             else if (item === 'force') force = req.swagger.params[item].value;
             else {
-                if (req.swagger.params[item].value) option[item] = req.swagger.params[item].value;
+                if (req.swagger.params[item].value) {
+                    option[item] = req.swagger.params[item].value;
+                    cacheKey += `${item}:${req.swagger.params[item].value}:`;
+                }
             }
 
         });
 
-        //read from redis first if 'force' is not required, read from cache
+
+        //read from redis first if 'force' is not required
         Promise
             .resolve()
             .then(()=> {
-                if (!force) return redis.getCache('').then((result)=> {
+                if (!force) return redis.getCache(cacheKey).then((result)=> {
                     // no cache, continue database search
                     if (!result) return Promise.resolve();
 
-                    return res.json(res.json(result));
+                    return res.json(result);
                 });
 
                 //force is true, just search database
@@ -69,19 +77,99 @@ function getAccount(req, res) {
                     })
                     .limit(limit)
                     .lean()
-                    .exec((err, result)=> {
-                        if (err) {
-                            return errorHandler(res, err, 500, 'internal error');
-                        }
-
-                        res.json(result);
+                    .exec()
+                    .then((result)=> {
+                        //set up the redis cache
+                        redis.setCache(cacheKey, JSON.stringify(result));
+                        return res.json(result);
                     });
+
             })
             .catch((err)=> {
-
+                return errors.errorHandler(res, err, 'controllers/account', 500, 'internal error');
             })
 
     })
 }
 
-module.exports = {generateAccountNumber};
+function createAccount(req, res) {
+    auth(req, res, ()=> {
+
+        let form = req.swagger.params["form"].value;
+
+        try {
+            validator.validate(form);
+        }
+        catch (err) {
+            res.status(400);
+            res.json({message: err.message});
+        }
+
+        form.number = generateAccountNumber(1)[0];
+
+        return dataModel.account
+            .create(form)
+            .then(()=> {
+                res.json(form.number);
+            })
+            .catch((err)=> {
+                return errors.errorHandler(res, err, 'controllers/account', 500, 'internal error');
+            })
+    })
+
+}
+
+function updateAccount(req, res) {
+
+    auth(req, res, ()=> {
+
+        let aid = req.swagger.params["id"].value;
+        let form = req.swagger.params["form"].value;
+
+        dataModel.account.findOneAndUpdate({number: aid}, {$set: form})
+            .then((account)=> {
+
+                if (!account) {
+                    res.status(404);
+                    return res.json({
+                        message: 'account not found'
+                    });
+                }
+
+                res.status(204);
+                res.send();
+            })
+            .catch((err)=> {
+                return errors.errorHandler(res, err, 'controllers/account', 500, 'internal error');
+            })
+
+    })
+}
+
+function deleteAccount(req, res) {
+
+    auth(req, res, ()=> {
+
+        let aid = req.swagger.params["id"].value;
+
+        dataModel.account.remove({number: aid})
+            .then((writeOp)=> {
+
+                if (writeOp.result.n === 0) {
+                    res.status(404);
+                    return res.json({
+                        message: 'account not found'
+                    });
+                }
+
+                res.status(204);
+                return res.send();
+            })
+            .catch((err)=> {
+                return errors.errorHandler(res, err, 'controllers/account', 500, 'internal error');
+            })
+
+    });
+}
+
+module.exports = {generateAccountNumber, getAccount, createAccount, updateAccount, deleteAccount};

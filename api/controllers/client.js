@@ -1,52 +1,21 @@
 const dataModel = require('../dataModel/dataModel');
-const uuid = require('uuid/v4');
-const log = require('../../logger');
-
-
-function auth(req, res, next) {
-    // if ('apikey' == req.swagger.params["Authorization"].value) {
-    //     next();
-    // }
-    // else {
-    //     log.warn("unauthorized request", {source: "api/controllers/client"});
-    //     res.status(401);
-    //     res.json({
-    //         message: 'unauthorized'
-    //     });
-    // }
-    next();
-}
-
-function errorHandler(res, err, statusCode, message) {
-    // generate a unique identifier, using uuid
-    let id = uuid();
-
-    // it is optional to show to the client this ID, and the log will have this ID for sure
-    // it will help with debug some tricky client problems
-    log.error(err, {source: "api/controllers/client", ref: id});
-
-    res.status(statusCode);
-    res.json({
-        message: message,
-        ref: id
-    });
-}
+const auth = require('./auth').auth;
+const errors = require('./errorHandler');
 
 
 function createClient(req, res) {
-
     auth(req, res, ()=> {
 
         let form = req.swagger.params["form"].value;
 
         //client record
-        let cr = new dataModel.client(form);
-
-        cr.save((err)=> {
-            if (err) return errorHandler(res, err, 500, 'internal error');
-
-            res.json('true');
-        })
+        dataModel.client.create(form)
+            .then((client)=> {
+                res.json(client._id);
+            })
+            .catch((err)=> {
+                return errors.errorHandler(res, err, 'controllers/client', 500, 'internal error');
+            })
 
     })
 }
@@ -74,13 +43,13 @@ function getClient(req, res) {
             })
             .limit(limit)
             .lean()
-            .exec((err, result)=> {
-                if (err) {
-                    errorHandler(res, err, 500, 'internal error');
-                }
-
+            .exec()
+            .then((result)=> {
                 res.json(result);
-            });
+            })
+            .catch((err)=> {
+                return errors.errorHandler(res, err, 'controllers/client', 500, 'internal error');
+            })
 
     })
 }
@@ -92,14 +61,22 @@ function updateClient(req, res) {
         let cid = req.swagger.params["id"].value;
         let form = req.swagger.params["form"].value;
 
-        dataModel.client.findOneAndUpdate({_id: cid}, {$set: form}, (err)=> {
+        dataModel.client.findOneAndUpdate({_id: cid}, {$set: form})
+            .then((client)=> {
 
-            if (err)  return errorHandler(res, err, 500, 'internal error');
+                if (!client) {
+                    res.status(404);
+                    return res.json({
+                        message: 'client not found'
+                    });
+                }
 
-            res.status(204);
-            res.send();
-        })
-
+                res.status(204);
+                res.send();
+            })
+            .catch((err)=> {
+                return errors.errorHandler(res, err, 'controllers/client', 500, 'internal error');
+            })
     })
 }
 
@@ -109,13 +86,22 @@ function deleteClient(req, res) {
 
         let cid = req.swagger.params["id"].value;
 
-        dataModel.client.remove({_id: cid}, (err)=> {
+        dataModel.client.remove({_id: cid})
+            .then((writeOp)=> {
 
-            if (err)  return errorHandler(res, err, 500, 'internal error');
+                if (writeOp.result.n === 0) {
+                    res.status(404);
+                    return res.json({
+                        message: 'client not found'
+                    });
+                }
 
-            res.status(204);
-            res.send();
-        })
+                res.status(204);
+                res.send();
+            })
+            .catch((err)=> {
+                return errors.errorHandler(res, err, 'controllers/client', 500, 'internal error');
+            })
     })
 }
 

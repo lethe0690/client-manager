@@ -6,7 +6,7 @@ mongoose.connect(config.db_mongo_connection, (err)=> {
 
     if (err) {
         log.error(err, {source: "api/dataModel/mongo"});
-        process.exit(1);
+        if (confg.env === 'production')process.exit(1);
     }
 
     mongoose.Promise = global.Promise;
