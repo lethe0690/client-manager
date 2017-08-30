@@ -1,7 +1,11 @@
 const dataModel = require('../dataModel/dataModel');
 const auth = require('./auth').auth;
 const errors = require('./errorHandler');
+const moment = require('moment');
 
+function getDateBefore(years) {
+    return moment().subtract(parseInt(years), 'years').toDate();
+}
 
 function createClient(req, res) {
     auth(req, res, ()=> {
@@ -30,6 +34,13 @@ function getClient(req, res) {
         // to get all query params and determine if this query has special limit
         Object.keys(req.swagger.params).forEach((item)=> {
             if (item === 'limit') limit = req.swagger.params[item].value;
+
+            // determine if the age range is set for query, this need some special treatment
+            // passing into the option like {..., dob :{ $lte: date, $get : date} }
+            // construct the time with standard ISO string as saved inside database
+            else if (item === 'maxage') option.dob['$gte'] = new Date(getDateBefore(req.swagger.params[item].value));
+            else if (item === 'minage') option.dob['$lte'] = new Date(getDateBefore(req.swagger.params[item].value));
+
             else {
                 if (req.swagger.params[item].value) option[item] = req.swagger.params[item].value;
             }
@@ -105,4 +116,4 @@ function deleteClient(req, res) {
     })
 }
 
-module.exports = {createClient, getClient, updateClient, deleteClient};
+module.exports = {createClient, getClient, updateClient, deleteClient, getDateBefore};
