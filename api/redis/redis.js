@@ -31,4 +31,4 @@ function setCache(key, value) {
     redisclient.set(`query:${key}`, value, 'EX', EXPIRE_TIME);
 }
 
-module.exports = {getCache, setCache};
+module.exports = {getCache, setCache, redisclient};
