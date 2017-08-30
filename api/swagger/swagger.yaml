@@ -31,6 +31,47 @@ paths:
             items:
               $ref: '#/definitions/PingResponse'
 
+  /clients/accounts/:
+      post:
+        description: create a client with accounts
+        x-swagger-router-controller: client
+        operationId: createClientWithAccounts
+        parameters:
+          - in: body
+            name: form
+            description: a form of client info
+            schema:
+              $ref: '#/definitions/NewClientWithAccounts'
+        responses:
+          "200":
+            description:  success response
+            schema:
+              $ref: '#/definitions/Client'
+          default:
+            description: unexpected error
+            schema:
+              $ref: '#/definitions/Error'
+
+  /clients/accounts/{accountNumber}:
+      get:
+        description: find a client by account number
+        x-swagger-router-controller: client
+        operationId: findClientByAccount
+        parameters:
+          - name: accountNumber
+            in: path
+            description: account number of client to search
+            required: true
+            type: string
+        responses:
+          "200":
+            description:  success response
+            schema:
+              $ref: '#/definitions/Client'
+          default:
+            description: unexpected error
+            schema:
+              $ref: '#/definitions/Error'
 
   /clients:
     get:
@@ -268,7 +309,8 @@ definitions:
       email:
         type: string
       dob:
-        type: string  
+        type: string
+        format: date-time
   NewClient:
     type: object
     required:
@@ -286,6 +328,7 @@ definitions:
         type: string
       dob:
         type: string
+        format: date-time
 
   NewAccount:
       type: object
@@ -298,6 +341,30 @@ definitions:
         status:
           type: string
 
+  NewClientWithAccounts:
+        type: object
+        required:
+          - name
+          - accounts
+        properties:
+          name:
+            type: string
+          address:
+            type: string
+          postalCode:
+            type: string
+          phone:
+            type: string
+          email:
+            type: string
+          dob:
+            type: string
+            format: date-time
+          accounts:
+            type: array
+            items:
+              type: object
+  
   Account:
         type: object
         required:
