@@ -252,13 +252,13 @@ paths:
                   schema:
                     $ref: '#/definitions/Error'
 
-  /accounts/{id}:
+  /accounts/{accountNumber}:
         put:
           description: update an account
           x-swagger-router-controller: account
           operationId: updateAccount
           parameters:
-            - name: id
+            - name: accountNumber
               in: path
               description: number of the account to update
               required: true
@@ -280,7 +280,7 @@ paths:
           x-swagger-router-controller: account
           operationId: deleteAccount
           parameters:
-            - name: id
+            - name: accountNumber
               in: path
               description: account number of the account to delete
               required: true

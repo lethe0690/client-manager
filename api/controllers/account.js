@@ -123,7 +123,7 @@ function updateAccount(req, res) {
 
     auth(req, res, ()=> {
 
-        let aid = req.swagger.params["id"].value;
+        let aid = req.swagger.params["accountNumber"].value;
         let form = req.swagger.params["form"].value;
 
         dataModel.account.findOneAndUpdate({number: aid}, {$set: form})
@@ -150,7 +150,7 @@ function deleteAccount(req, res) {
 
     auth(req, res, ()=> {
 
-        let aid = req.swagger.params["id"].value;
+        let aid = req.swagger.params["accountNumber"].value;
 
         dataModel.account.remove({number: aid})
             .then((writeOp)=> {
