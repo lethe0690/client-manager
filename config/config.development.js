@@ -2,7 +2,7 @@ module.exports = {
 
     port: 5000,
 
-    db_mongo_connection: 'mongodb://rbc:rbc@ds161503.mlab.com:61503/rbc',
+    db_mongo_connection: '',
 
     redis_port: 6379,
     redis_host: 'localhost',
