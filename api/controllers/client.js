@@ -39,11 +39,11 @@ function getClient(req, res) {
             // determine if the age range is set for query, this need some special treatment
             // passing into the option like {..., dob :{ $lte: date, $get : date} }
             // construct the time with standard ISO string as saved inside database
-            else if (item === 'maxage') {
+            else if (item === 'maxage' && req.swagger.params[item].value) {
                 if (!option.dob) option.dob = {};
                 option.dob['$gte'] = new Date(getDateBefore(req.swagger.params[item].value));
             }
-            else if (item === 'minage') {
+            else if (item === 'minage' && req.swagger.params[item].value) {
                 if (!option.dob) option.dob = {};
                 option.dob['$lte'] = new Date(getDateBefore(req.swagger.params[item].value));
             }
