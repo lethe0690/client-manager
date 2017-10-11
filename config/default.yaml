@@ -27,7 +27,7 @@ swagger:
       - cors
       - swagger_params_parser
       - swagger_security
-      - _swagger_validate
+#      - _swagger_validate
       - express_compatibility
       - _router
 
