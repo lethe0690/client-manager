@@ -2,6 +2,7 @@ const SwaggerExpress = require('swagger-express-mw');
 const app = require('express')();
 
 const config = require('./config');
+const cors = require('cors');
 
 const root = {
     appRoot: __dirname // required config
@@ -16,10 +17,7 @@ SwaggerExpress.create(root, function (err, swaggerExpress) {
     swaggerExpress.register(app);
 
     // cross domain
-    app.use(function (req, res, next) {
-        res.header("Access-Control-Allow-Origin", "*");
-        next();
-    });
+    app.use(cors());
 
     let port = process.env.PORT || config.port || 5000;
     app.listen(port);
